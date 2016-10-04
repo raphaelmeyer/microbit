@@ -1,13 +1,11 @@
 import microbit
 import random
 import radio
-import music
 
-can_sing = microbit.pin0.is_touched()
 radio.on()
 
 def listen():
-    for i in range(5):
+    for i in range(20):
         answer = radio.receive()
         if answer is not None:
             return answer
@@ -16,36 +14,35 @@ def listen():
 
 def respond(message):
     if message == 'hello':
-        radio.send('how are you')
-    elif message == 'can you sing':
-        if can_sing:
-            radio.send('yes')
-            music.play(music.ODE)
-        else:
-            radio.send('no')
+        radio.send('hey')
+        microbit.display.show(microbit.Image.HAPPY)
+        microbit.sleep(1000)
+        microbit.display.clear()
 
 def start_talking():
+    microbit.display.show(microbit.Image.SMILE)
+    microbit.sleep(1000)
     radio.send('hello')
     answer = listen()
-    if answer == 'how are you':
-        radio.send('can you sing')
-        answer = listen()
-        if answer == 'yes':
-            microbit.display.show(microbit.Image.HAPPY)
-        elif answer == 'no':
-            microbit.display.show(microbit.Image.SAD)
-        else:
-            microbit.display.show(microbit.Image.CONFUSED)
-        microbit.sleep(2000)
-        microbit.display.clear()
+    if answer == 'hey':
+        microbit.display.show(microbit.Image.HAPPY)
+    else:
+        microbit.display.show(microbit.Image.MEH)
+
+    microbit.sleep(1000)
+    microbit.display.clear()
 
 ################################################################
 
+last_talk = 0
+
 while True:
-    if random.random() < 0.05:
+    passed_time = microbit.running_time() - last_talk
+    if passed_time > 2300 and random.random() < 0.01:
         start_talking()
+        last_talk = microbit.running_time()
     else:
-        message = listen()
+        message = radio.receive()
         if message is not None:
             respond(message)
     microbit.sleep(100)
